@@ -34,9 +34,25 @@ def southeast_airports(df):
         .save(f"{HDFS_OUTPUT_BASE}/southeast_airports")
     return df_se
 
+#function to find Unique cities with airports, per country
+def unique_cities_per_country(df):
+    df_result = df.groupBy("Country") \
+        .agg(countDistinct("City").alias("unique_city_count")) \
+        .orderBy(col("unique_city_count").desc())
+
+    df_result.show(20, truncate=False)
+
+    df_result.write.mode("overwrite") \
+        .format("csv") \
+        .option("header", "true") \
+        .save(f"{HDFS_OUTPUT_BASE}/unique_cities_per_country")
+
+    return df_result
+
 #Driver
 if __name__ == "__main__":
     #calling function to find airports in southeast part
     southeast_airports(df_airports)
+    unique_cities_per_country(df_airports)
 
     spark.stop()
