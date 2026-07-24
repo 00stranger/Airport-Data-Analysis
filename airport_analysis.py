@@ -49,10 +49,25 @@ def unique_cities_per_country(df):
 
     return df_result
 
+#funtion to find average altitude (feet) of airports, per country
+def avg_altitude_per_country(df):
+    df_result = df.groupBy("Country") \
+        .agg(avg("Altitude").alias("avg_altitude_ft")) \
+        .orderBy(col("avg_altitude_ft").desc())
+
+    df_result.show(20, truncate=False)
+
+    df_result.write.mode("overwrite") \
+        .format("csv") \
+        .option("header", "true") \
+        .save(f"{HDFS_OUTPUT_BASE}/avg_altitude_per_country")
+
+    return df_result
+
 #Driver
 if __name__ == "__main__":
     #calling function to find airports in southeast part
     southeast_airports(df_airports)
     unique_cities_per_country(df_airports)
-
+    avg_altitude_per_country(df_airports)
     spark.stop()
