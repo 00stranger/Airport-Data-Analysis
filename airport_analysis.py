@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, countDistinct
+from pyspark.sql.functions import col, countDistinct, count, avg
 
 #creating spark session
 spark = SparkSession.builder \
@@ -64,10 +64,27 @@ def avg_altitude_per_country(df):
 
     return df_result
 
+#function to return Number of airports operating per timezone
+def airports_per_timezone(df):
+    df_result = df.groupBy("Timezone") \
+        .agg(count("AirportID").alias("num_airports")) \
+        .orderBy(col("Timezone"))
+
+    df_result.show(30, truncate=False)
+
+    df_result.write.mode("overwrite") \
+        .format("csv") \
+        .option("header", "true") \
+        .save(f"{HDFS_OUTPUT_BASE}/airports_per_timezone")
+
+    return df_result
+
+
 #Driver
 if __name__ == "__main__":
     #calling function to find airports in southeast part
     southeast_airports(df_airports)
     unique_cities_per_country(df_airports)
     avg_altitude_per_country(df_airports)
+    airports_per_timezone(df_airports)
     spark.stop()
