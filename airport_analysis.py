@@ -79,6 +79,23 @@ def airports_per_timezone(df):
 
     return df_result
 
+#function to find average Latitude and Longitude of airports, per country
+def avg_lat_long_per_country(df):
+    df_result = df.groupBy("Country") \
+        .agg(
+            avg("Latitude").alias("avg_latitude"),
+            avg("Longitude").alias("avg_longitude")
+        ) \
+        .orderBy("Country")
+
+    df_result.show(20, truncate=False)
+
+    df_result.write.mode("overwrite") \
+        .format("csv") \
+        .option("header", "true") \
+        .save(f"{HDFS_OUTPUT_BASE}/avg_lat_long_per_country")
+
+    return df_result
 
 #Driver
 if __name__ == "__main__":
@@ -87,4 +104,5 @@ if __name__ == "__main__":
     unique_cities_per_country(df_airports)
     avg_altitude_per_country(df_airports)
     airports_per_timezone(df_airports)
+    avg_lat_long_per_country(df_airports)
     spark.stop()
