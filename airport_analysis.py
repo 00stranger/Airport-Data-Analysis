@@ -97,6 +97,22 @@ def avg_lat_long_per_country(df):
 
     return df_result
 
+#function to display Count of distinct DST types
+def dst_counts(df):
+    df_result = df.groupBy("DST") \
+        .agg(count("AirportID").alias("num_airports")) \
+        .orderBy(col("num_airports").desc())
+
+    print("Number of distinct DST types:", df.select("DST").distinct().count())
+    df_result.show(truncate=False)
+
+    df_result.write.mode("overwrite") \
+        .format("csv") \
+        .option("header", "true") \
+        .save(f"{HDFS_OUTPUT_BASE}/dst_counts")
+
+    return df_result
+
 #Driver
 if __name__ == "__main__":
     #calling function to find airports in southeast part
@@ -105,4 +121,5 @@ if __name__ == "__main__":
     avg_altitude_per_country(df_airports)
     airports_per_timezone(df_airports)
     avg_lat_long_per_country(df_airports)
+    dst_counts(df_airports)
     spark.stop()
